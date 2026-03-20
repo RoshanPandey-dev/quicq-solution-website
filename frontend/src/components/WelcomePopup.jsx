@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { X } from 'lucide-react'
+import { X, CheckCircle } from 'lucide-react'
 import './WelcomePopup.css'
 import axios from 'axios'
 
 export default function WelcomePopup() {
   const [isOpen, setIsOpen] = useState(false)
-  const [formData, setFormData] = useState({ name: '', email: '', message: '' })
+  const [submitted, setSubmitted] = useState(false)
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' })
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -28,8 +29,12 @@ export default function WelcomePopup() {
     e.preventDefault()
     try {
       await axios.post('http://localhost:8000/api/v1/popup', formData)
-      handleClose()
-      setFormData({ name: '', email: '', message: '' })
+      setSubmitted(true)
+      setTimeout(() => {
+        handleClose()
+        setSubmitted(false)
+        setFormData({ name: '', email: '', phone: '', message: '' })
+      }, 3000)
     } catch (error) {
       console.error('Error submitting popup form:', error)
       alert('Failed to submit. Please try again later.')
@@ -48,6 +53,12 @@ export default function WelcomePopup() {
           </button>
         </div>
         <form className="welcome-popup-form" onSubmit={handleSubmit}>
+          {submitted && (
+            <div className="welcome-success">
+              <CheckCircle size={20} />
+              <span>Thank you! Your inquiry has been sent.</span>
+            </div>
+          )}
           <div className="welcome-field">
             <label htmlFor="welcome-name">Name</label>
             <input type="text" id="welcome-name" name="name" value={formData.name} onChange={handleChange} placeholder="Enter your name" required />
@@ -55,6 +66,10 @@ export default function WelcomePopup() {
           <div className="welcome-field">
             <label htmlFor="welcome-email">Email</label>
             <input type="email" id="welcome-email" name="email" value={formData.email} onChange={handleChange} placeholder="you@example.com" required />
+          </div>
+          <div className="welcome-field">
+            <label htmlFor="welcome-phone">Phone Number</label>
+            <input type="tel" id="welcome-phone" name="phone" value={formData.phone} onChange={handleChange} pattern="^\+?[0-9\s\-]{7,15}$" title="Enter a valid 10-15 digit phone number" placeholder="+91 98765 43210" required />
           </div>
           <div className="welcome-field">
             <label htmlFor="welcome-message">Message</label>
